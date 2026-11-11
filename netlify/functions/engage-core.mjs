@@ -19,6 +19,11 @@ export async function handle(req, store, adminKey, opts = {}) {
       if (!isAdmin(url.searchParams.get('key'))) return json({ error: 'Sai mã quản trị' }, 403);
       return json(await stats(store, Math.min(90, Number(url.searchParams.get('days')) || 30)));
     }
+    const cnt = url.searchParams.get('cnt');
+    if (cnt) {
+      if (!/^[a-z0-9-]{1,48}$/.test(cnt)) return json({ n: 0 }, 400);
+      return json({ n: (await store.get(`n/${cnt}`, { type: 'json' })) || 0 });
+    }
     const id = url.searchParams.get('id');
     if (!validId(id)) return json({ error: 'Mã bài không hợp lệ' }, 400);
     return json(pub(await read(store, id), isAdmin(url.searchParams.get('key'))));
@@ -66,7 +71,9 @@ async function view(store, b) {
   const ref = String(b.r || '').toLowerCase();
   const src = !ref ? 'truc-tiep' : (SRC.find(([, re]) => re.test(ref)) || ['khac'])[0];
   await store.set(`v/${today()}/${p}/${dev}/${src}/${v}/${Math.random().toString(36).slice(2, 8)}`, '');
-  return json({ ok: true });
+  const n = ((await store.get(`n/${p}`, { type: 'json' })) || 0) + 1;
+  await store.setJSON(`n/${p}`, n);
+  return json({ ok: true, n });
 }
 async function stats(store, days) {
   const out = { days, pages: {}, day: {}, src: {}, dev: {}, readers: 0, views: 0 };

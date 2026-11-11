@@ -199,7 +199,8 @@ function loadC(el){if(el.dataset.cok)return;el.dataset.cok=1;fetch(A+'?id='+enco
 document.querySelectorAll('.eng').forEach(function(el){var f=el.querySelector('.ecf');if(!f)return;var sv=ls('tsc_name');if(sv)f.n.value=sv;f.onsubmit=function(ev){ev.preventDefault();var m=f.querySelector('small'),b=f.querySelector('button');m.textContent='';b.disabled=true;
 call({id:el.dataset.id,a:'cmt',n:f.n.value,ph:f.ph.value,t:f.t.value,web:f.web.value}).then(function(j){ls('tsc_name',f.n.value);f.t.value='';m.textContent=(j.c||[]).some(function(x){return x.n===f.n.value})?'Đã gửi, cảm ơn bạn!':'Đã gửi. Bình luận sẽ hiện sau khi được duyệt.';drawC(el,j)}).catch(function(e){m.textContent=e.message}).finally(function(){b.disabled=false})}});
 var vid=ls('tsc_vid');if(!vid){vid=Math.random().toString(36).slice(2,12);ls('tsc_vid',vid)}
-function view(p){if(admin||ss('tsv_'+p))return;ss('tsv_'+p,1);call({a:'view',p:p,v:vid,r:document.referrer,m:matchMedia('(max-width:720px)').matches?1:0}).catch(function(){})}
+function showN(p,n){var s=document.getElementById(p),c=s&&s.querySelector('.cr2');if(!c||!n)return;var e=c.querySelector('.evc');if(!e){e=mk('span','evc');c.appendChild(e)}e.textContent=' · '+n.toLocaleString('vi-VN')+' lượt đọc'}
+function view(p){if(admin||ss('tsv_'+p)){if(p!=='trang-chu')fetch(A+'?cnt='+p).then(function(r){return r.json()}).then(function(j){showN(p,j.n)}).catch(function(){});return}ss('tsv_'+p,1);call({a:'view',p:p,v:vid,r:document.referrer,m:matchMedia('(max-width:720px)').matches?1:0}).then(function(j){showN(p,j.n)}).catch(function(){})}
 function go(){var h=(location.hash.slice(1)||'trang-chu').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,48)||'trang-chu';view(h);if(h.indexOf('bai-')===0){var s=document.getElementById(h);var el=s&&s.querySelector('.eng');if(el)loadC(el)}}
 addEventListener('hashchange',go);go();
 if(!admin)return;
